@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -23,4 +23,5 @@ class NexonNoticeEvent(Base):
     event_start_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     event_end_date: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     contents: Mapped[str | None] = mapped_column(Text, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     raw_payload: Mapped[str] = mapped_column(String, nullable=False)

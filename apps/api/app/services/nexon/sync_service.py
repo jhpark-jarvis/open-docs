@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
 
@@ -15,6 +17,8 @@ from app.services.nexon.client import NexonOpenApiClient
 
 class NexonNoticeSyncService:
     """Orchestration layer for notice synchronization."""
+
+    _KST = ZoneInfo("Asia/Seoul")
 
     def __init__(self, db: Session, client: NexonOpenApiClient | None = None) -> None:
         # DB 세션과 Nexon API 클라이언트를 주입받아 재사용 가능한 서비스로 둡니다.
@@ -56,6 +60,7 @@ class NexonNoticeSyncService:
                 },
                 ensure_ascii=False,
             )
+            is_active = self._is_active(item.date_event_start, item.date_event_end)
 
             if instance is None:
                 # 최초 수집된 공지는 새 레코드로 저장합니다.
@@ -67,6 +72,7 @@ class NexonNoticeSyncService:
                     event_start_date=item.date_event_start,
                     event_end_date=item.date_event_end,
                     contents=None,
+                    is_active=is_active,
                     raw_payload=payload,
                 )
                 self._db.add(instance)
@@ -78,6 +84,7 @@ class NexonNoticeSyncService:
                 instance.notice_date = item.date
                 instance.event_start_date = item.date_event_start
                 instance.event_end_date = item.date_event_end
+                instance.is_active = is_active
                 instance.raw_payload = payload
                 updated += 1
 
@@ -119,6 +126,7 @@ class NexonNoticeSyncService:
             },
             ensure_ascii=False,
         )
+        is_active = self._is_active(detail.date_event_start, detail.date_event_end)
 
         if instance is None:
             # 목록보다 상세가 먼저 들어오는 경우를 대비해 예외 없이 생성합니다.
@@ -130,6 +138,7 @@ class NexonNoticeSyncService:
                 event_start_date=detail.date_event_start,
                 event_end_date=detail.date_event_end,
                 contents=detail.contents,
+                is_active=is_active,
                 raw_payload=payload,
             )
             self._db.add(instance)
@@ -141,9 +150,32 @@ class NexonNoticeSyncService:
             instance.event_start_date = detail.date_event_start
             instance.event_end_date = detail.date_event_end
             instance.contents = detail.contents
+            instance.is_active = is_active
             instance.raw_payload = payload
 
         # 상세 동기화도 하나의 저장 단위로 commit합니다.
         self._db.commit()
         self._db.refresh(instance)
         return instance
+
+    @staticmethod
+    def _is_active(
+        event_start_date: datetime | None,
+        event_end_date: datetime | None,
+        now: datetime | None = None,
+    ) -> bool:
+        if event_start_date is None or event_end_date is None:
+            return False
+
+        now = now or datetime.now(NexonNoticeSyncService._KST)
+        start = NexonNoticeSyncService._to_kst(event_start_date).date()
+        end = NexonNoticeSyncService._to_kst(event_end_date).date()
+        today = NexonNoticeSyncService._to_kst(now).date()
+
+        return start <= today <= end
+
+    @staticmethod
+    def _to_kst(value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=NexonNoticeSyncService._KST)
+        return value.astimezone(NexonNoticeSyncService._KST)
