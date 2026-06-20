@@ -1,8 +1,10 @@
-﻿# OpenDocs
+# OpenDocs
 
-OpenDocs는 MapleStory 이벤트 공지 정보를 자동 수집, OCR 추출, 구조화, 문서화하는 AI 기반 문서 플랫폼의 모노레포입니다.
+OpenDocs는 MapleStory 이벤트 공지 정보를 자동 수집하고, OCR 추출, 구조화, 문서화까지 이어가는 AI 기반 문서 플랫폼의 모노레포입니다.
 
 이 저장소는 기능 구현보다 먼저, 앞으로 작업할 때 기준이 되는 프로젝트 구조와 개발 규칙을 정리하는 데 초점을 둡니다.
+
+프로젝트의 최상위 운영 규칙은 [`agents.md`](./agents.md)입니다. 이 문서는 저장소 전체의 기준 문서로 취급합니다.
 
 ## 기술 스택
 
@@ -36,7 +38,7 @@ OpenDocs는 MapleStory 이벤트 공지 정보를 자동 수집, OCR 추출, 구
 ## 현재 범위
 
 - 이벤트 공지 수집 파이프라인의 골격을 먼저 준비합니다.
-- OCR, LLM, 문서 생성, 파서, Nexon 연동은 서비스 경계만 잡고 구현은 나중에 합니다.
+- OCR, LLM, 문서 생성, 파서, Nexon 연동은 서비스 경계만 먼저 잡고 필요한 부분부터 구현합니다.
 - 인증/인가, 커뮤니티 리뷰 기능은 이후 단계에서 추가합니다.
 
 ## 작업 기준
@@ -50,6 +52,7 @@ OpenDocs는 MapleStory 이벤트 공지 정보를 자동 수집, OCR 추출, 구
 
 ## 참고 문서
 
+- 최상위 운영 규칙: [`agents.md`](./agents.md)
 - 작업 단계와 우선순위: [`PROJECT_PLAN.md`](./PROJECT_PLAN.md)
 - 제품/기술 문서 작성 기준: [`docs/README.md`](./docs/README.md)
 - 인프라 작업 기준: [`infra/README.md`](./infra/README.md)

@@ -1,4 +1,4 @@
-﻿# OpenDocs 프로젝트 계획
+# OpenDocs 프로젝트 계획
 
 OpenDocs는 MapleStory 이벤트 공지를 자동으로 수집하고, OCR과 구조화 과정을 거쳐 문서로 정리하는 플랫폼입니다.
 
