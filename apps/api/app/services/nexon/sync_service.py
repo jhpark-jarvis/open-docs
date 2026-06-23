@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Sequence
-from datetime import datetime, timezone
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from sqlalchemy.orm import Session
@@ -91,6 +91,9 @@ class NexonNoticeSyncService:
             # 저장 후 반환용 리스트에 모읍니다. is_active 같은 후속 컬럼도 여기서 함께 갱신될 수 있습니다.
             saved.append(instance)
 
+        # 목록 응답에 없어진 기존 이벤트도 현재 시각 기준으로 활성 상태를 다시 계산합니다.
+        self._refresh_active_flags()
+
         # 한 번에 commit해서 목록 sync를 하나의 단위 작업으로 처리합니다.
         self._db.commit()
         for instance in saved:
@@ -158,6 +161,16 @@ class NexonNoticeSyncService:
         self._db.refresh(instance)
         return instance
 
+    def _refresh_active_flags(self, now: datetime | None = None) -> None:
+        now = now or datetime.now(self._KST)
+
+        for instance in self._db.query(NexonNoticeEvent).all():
+            instance.is_active = self._is_active(
+                instance.event_start_date,
+                instance.event_end_date,
+                now=now,
+            )
+
     @staticmethod
     def _is_active(
         event_start_date: datetime | None,
@@ -168,11 +181,11 @@ class NexonNoticeSyncService:
             return False
 
         now = now or datetime.now(NexonNoticeSyncService._KST)
-        start = NexonNoticeSyncService._to_kst(event_start_date).date()
-        end = NexonNoticeSyncService._to_kst(event_end_date).date()
-        today = NexonNoticeSyncService._to_kst(now).date()
+        start = NexonNoticeSyncService._to_kst(event_start_date)
+        end = NexonNoticeSyncService._to_kst(event_end_date)
+        current = NexonNoticeSyncService._to_kst(now)
 
-        return start <= today <= end
+        return start <= current <= end
 
     @staticmethod
     def _to_kst(value: datetime) -> datetime:

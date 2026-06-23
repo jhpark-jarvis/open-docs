@@ -25,9 +25,17 @@ def test_is_active_returns_false_when_now_is_outside_event_window() -> None:
     assert NexonNoticeSyncService._is_active(event_start, event_end, now=now) is False
 
 
-def test_is_active_returns_true_for_same_day_midnight_values() -> None:
+def test_is_active_returns_false_when_end_time_has_passed_on_same_day() -> None:
     event_start = datetime(2026, 6, 21, 0, 0, 0, tzinfo=KST)
     event_end = datetime(2026, 6, 21, 0, 0, 0, tzinfo=KST)
+    now = datetime(2026, 6, 21, 18, 30, 0, tzinfo=KST)
+
+    assert NexonNoticeSyncService._is_active(event_start, event_end, now=now) is False
+
+
+def test_is_active_returns_true_when_now_matches_end_time() -> None:
+    event_start = datetime(2026, 6, 21, 0, 0, 0, tzinfo=KST)
+    event_end = datetime(2026, 6, 21, 18, 30, 0, tzinfo=KST)
     now = datetime(2026, 6, 21, 18, 30, 0, tzinfo=KST)
 
     assert NexonNoticeSyncService._is_active(event_start, event_end, now=now) is True
