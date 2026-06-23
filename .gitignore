@@ -16,6 +16,7 @@ yarn-error.log*
 __pycache__/
 *.py[cod]
 .pytest_cache/
+pytest-cache-files-*/
 .ruff_cache/
 .mypy_cache/
 .venv/
@@ -27,6 +28,7 @@ build/
 # Tooling
 .idea/
 .vscode/
+.tmp/
 
 # Local task notes
 .docs/
